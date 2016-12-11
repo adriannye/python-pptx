@@ -37,14 +37,25 @@ class BaseChartElement(BaseOxmlElement):
     @property
     def cat_pts(self):
         """
-        The sequence of ``<c:pt>`` elements under the ``<c:cat>`` element of
-        the first series in this xChart element, ordered by the value of
-        their ``idx`` attribute.
+        Return a sequence representing the `c:pt` elements under the `c:cat`
+        element of the first series in this xChart element. A category having
+        no value will have no corresponding `c:pt` element; |None| will
+        appear in that position in such cases. Items appear in `idx` order.
+        Only those in the first ``<c:lvl>`` element are included in the case
+        of multi-level categories.
         """
+        def cat_pt_having_idx(cat_pts, idx):
+            for pt in cat_pts:
+                if pt.idx == idx:
+                    return pt
+            return None
+
         cat_pts = self.xpath('./c:ser[1]/c:cat//c:lvl[1]/c:pt')
         if not cat_pts:
             cat_pts = self.xpath('./c:ser[1]/c:cat//c:pt')
-        return sorted(cat_pts, key=lambda pt: pt.idx)
+
+        return [cat_pt_having_idx(cat_pts, idx)
+                for idx in range(self.cat_pt_count)]
 
     @property
     def grouping_val(self):
