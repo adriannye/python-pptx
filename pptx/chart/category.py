@@ -100,4 +100,4 @@ class CategoryLevel(Sequence):
         raise NotImplementedError
 
     def __len__(self):
-        raise NotImplementedError
+        return len(self._lvl.pt_lst)
