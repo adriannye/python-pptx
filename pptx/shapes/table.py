@@ -281,6 +281,25 @@ class _Cell(Subshape):
             tmpl = "margin value must be integer or None, got '%s'"
             raise TypeError(tmpl % margin_value)
 
+    @staticmethod
+    def _validate_span_value(span_value):
+        #TODO: this should validate that there actually are span_value-1
+        #cells to the right of cell in table.
+        return _validate_margin_value(span_value)
+
+    @property
+    def grid_span(self):
+        """
+        Read/write integer value of how many columns this cell spans.
+        If assigned |None|, the default value is used, 1.
+        """
+        return self._tc.gridSpan
+
+    @grid_span.setter
+    def grid_span(self, grid_span):
+        self._validate_span_value(grid_span)
+        self._tc.gridSpan = grid_span
+
 
 class _Column(Subshape):
     """

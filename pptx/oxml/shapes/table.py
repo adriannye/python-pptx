@@ -9,7 +9,7 @@ from __future__ import absolute_import, division
 from .. import parse_xml
 from ...enum.text import MSO_VERTICAL_ANCHOR
 from ..ns import nsdecls
-from ..simpletypes import ST_Coordinate, ST_Coordinate32, XsdBoolean
+from ..simpletypes import ST_Coordinate, ST_Coordinate32, XsdBoolean, XsdInt
 from ..text import CT_TextBody
 from ..xmlchemy import (
     BaseOxmlElement, Choice, OneAndOnlyOne, OptionalAttribute,
@@ -163,6 +163,8 @@ class CT_TableCell(BaseOxmlElement):
     """
     txBody = ZeroOrOne('a:txBody', successors=('a:tcPr', 'a:extLst',))
     tcPr = ZeroOrOne('a:tcPr', successors=('a:extLst',))
+    gridSpan = OptionalAttribute('gridSpan', XsdInt, default=1)
+    hMerge = OptionalAttribute('hMerge', XsdBoolean, default=False)
 
     @property
     def anchor(self):
@@ -183,6 +185,79 @@ class CT_TableCell(BaseOxmlElement):
             return
         tcPr = self.get_or_add_tcPr()
         tcPr.anchor = anchor_enum_idx
+
+    @property
+    def gridSpan(self):
+        """
+        Read/write integer number of columns spanned represented in ``gridSpan`` attribute
+        of the ``<a:tc>``. If the
+        attribute is not present, the default value ``1`` 
+        is returned.  Assigning |None| to ``gridSpan``
+        property clears that attribute from the element, effectively setting
+        it to the default value.
+        """
+        return self._get_span('gridSpan')
+
+    @gridSpan.setter
+    def gridSpan(self, value):
+        self._set_span('gridSpan', value)
+
+    def _get_span(self, attr_name, default=None):
+        """
+        Generalized method to get span values.
+        Default of None is interpreted as 1.
+        """
+        if self is None:
+            return default
+        value = self.get(attr_name, default)
+        if value == None:
+            return value
+        return int(value)
+
+    def _set_span(self, gridSpan, value):
+        """
+        Set value of gridSpan attribute on ``<a:tc>`` element. If *gridSpan*
+        is |None|, the gridSpan attribute is removed.
+        """
+        if value is None and self.tc is None:
+            return
+        tc = self.get_or_add_tc()
+        setattr(tc, gridSpan, value)
+        #TODO: set cell hMerge to 1 in value-1 adjacent cells
+
+    @property
+    def hMerge(self):
+        """
+        Read/write integer number of columns spanned represented in ``hMerge`` attribute
+        of the ``<a:tc>``. If the
+        attribute is not present, the default value ``1`` 
+        is returned.  Assigning |None| to ``hMerge``
+        property clears that attribute from the element, effectively setting
+        it to the default value.
+        """
+        return self._get_merge('hMerge')
+
+    @hMerge.setter
+    def hMerge(self, value):
+        self._set_merge('hMerge', value)
+
+    def _get_merge(self, attr_name, default=1):
+        """
+        Generalized method to get span values.
+        """
+        if self.tc is None:
+            return default
+        return int(self.tc.get(attr_name, default))
+
+    def _set_merge(self, hMerge, value):
+        """
+        Set value of hMerge attribute on ``<a:tc>`` element. If *hMerge*
+        is |None|, the hMerge attribute is removed.
+        """
+        if value is None and self.tc is None:
+            return
+        tc = self.get_or_add_tc()
+        setattr(tc, hMerge, value)
 
     @property
     def marT(self):

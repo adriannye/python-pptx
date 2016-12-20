@@ -200,6 +200,15 @@ class Describe_Cell(object):
         cell.text = text
         assert cell._tc.xml == expected_xml
 
+    def it_knows_its_grid_span_setting(self, grid_span_get_fixture):
+        cell, expected_value = grid_span_get_fixture
+        assert cell.grid_span == expected_value
+
+    def it_can_change_its_grid_span(self, grid_span_set_fixture):
+        cell, gridSpan, expected_xml = grid_span_set_fixture
+        cell.gridSpan = gridSpan
+        assert cell._tc.xml == expected_xml
+
     # fixtures -------------------------------------------------------
 
     @pytest.fixture(params=[
@@ -229,6 +238,28 @@ class Describe_Cell(object):
         cell = _Cell(element(tc_cxml), None)
         expected_xml = xml(expected_tc_cxml)
         return cell, new_value, expected_xml
+
+    @pytest.fixture(params=[
+        ('a:tc',               None),
+        ('a:tc{gridSpan=1}',   1),
+        ('a:tc{gridSpan=2}',   2),
+    ])
+    def grid_span_get_fixture(self, request):
+        tc_cxml, expected_value = request.param
+        cell = _Cell(element(tc_cxml), None)
+        return cell, expected_value
+
+    @pytest.fixture(params=[
+        ('a:tc', None, 'a:tc'),
+        ('a:tc', 1,    'a:tc{gridSpan=1}'),
+        ('a:tc', 2, 'a:tc{gridSpan=2}'),
+        ('a:tc{gridSpan=1}',   2, 'a:tc{gridSpan=2}'),
+        ('a:tc{gridSpan=1}', None, 'a:tc'),
+    ])
+    def grid_span_set_fixture(self, request):
+        tc_cxml, new_value, expected_tc_cxml = request.param
+        cell = _Cell(element(tc_cxml), None)
+        expected_xml = xml(expected_tc_cxml)
 
     @pytest.fixture
     def fill_fixture(self, cell):
